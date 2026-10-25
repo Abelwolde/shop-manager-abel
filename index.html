@@ -1,0 +1,1224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Shop Manager</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Ethiopic:wght@400;600;700;800&family=Noto+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#f4f6fa;--card:#fff;--ink:#16202e;--muted:#6b7787;--line:#e5e9f0;--brand:#2563eb;--green:#15803d;--red:#dc2626;--amber:#b45309;--radius:16px}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:'Noto Sans','Noto Sans Ethiopic',system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--ink)}
+  .screen{min-height:100vh;display:grid;place-items:center;padding:20px}
+  .box{background:#fff;border-radius:20px;padding:32px;width:min(500px,100%);box-shadow:0 10px 40px #0001}
+  .box h1{margin:0 0 8px;font-size:28px}
+  .box p{color:var(--muted);margin:0 0 24px}
+  header{background:#fff;border-bottom:1px solid var(--line);padding:16px 22px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+  .brand{font-size:22px;font-weight:800;display:flex;align-items:center;gap:10px}
+  .logo{width:38px;height:38px;background:var(--brand);color:#fff;border-radius:11px;display:grid;place-items:center;font-size:20px}
+  .user-info{display:flex;align-items:center;gap:10px;font-size:14px;flex-wrap:wrap}
+  main{max-width:1150px;margin:auto;padding:24px 20px 60px}
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px}
+  .stat{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:18px}
+  .stat small{color:var(--muted);font-weight:600;font-size:13px}
+  .stat b{display:block;font-size:28px;margin-top:6px}
+  .toolbar{display:flex;gap:10px;margin-bottom:18px;flex-wrap:wrap}
+  input,select,textarea{font:inherit;padding:13px 14px;border:1px solid var(--line);border-radius:12px;background:#fff;width:100%}
+  #search{flex:1;min-width:180px;font-size:17px}
+  button{font:inherit;font-weight:700;cursor:pointer;border:1px solid var(--line);background:#fff;color:var(--ink);padding:12px 16px;border-radius:12px;transition:.15s}
+  button:hover{transform:translateY(-1px);border-color:#c8d2e0}
+  button:disabled{opacity:.5;cursor:not-allowed;transform:none}
+  .primary{background:var(--brand);border-color:var(--brand);color:#fff;font-size:16px}
+  .sell{background:#dcfce7;border-color:#bbf7d0;color:var(--green)}
+  .restock{background:#dbeafe;border-color:#bfdbfe;color:#1d4ed8}
+  .danger{color:var(--red)}
+  .lang-select{padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:#fff;font-weight:600;cursor:pointer;min-width:140px}
+  .list{background:#fff;border:1px solid var(--line);border-radius:var(--radius);overflow:hidden}
+  .row{display:grid;grid-template-columns:1fr 110px 110px auto;gap:12px;align-items:center;padding:16px 18px;border-bottom:1px solid var(--line)}
+  .row:last-child{border-bottom:0}
+  .name{font-weight:700;font-size:17px}
+  .meta{color:var(--muted);font-size:13px;margin-top:4px}
+  .price{font-weight:700}
+  .stock{font-weight:800;font-size:18px}
+  .stock.low{color:var(--amber)}
+  .stock.out{color:var(--red)}
+  .badge{display:inline-block;font-size:11px;font-weight:700;background:#fef3c7;color:var(--amber);padding:3px 7px;border-radius:6px;margin-left:6px;vertical-align:middle}
+  .actions{display:flex;gap:7px;flex-wrap:wrap;justify-content:flex-end}
+  .actions button{padding:10px 12px;font-size:14px}
+  .icon-btn{padding:10px 11px!important}
+  .empty{padding:60px 20px;text-align:center;color:var(--muted)}
+  .empty h2{color:var(--ink);margin:0 0 8px}
+  h3{margin:26px 0 12px}
+  #activity{font-size:14px;color:var(--muted);line-height:1.9}
+  dialog{border:0;border-radius:20px;padding:26px;width:min(460px,92vw);box-shadow:0 30px 80px #0003}
+  dialog::backdrop{background:#0f172a88}
+  dialog h2{margin:0 0 18px}
+  .field{margin-bottom:14px}
+  .field label{display:block;font-size:14px;font-weight:600;margin-bottom:6px}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .dialog-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:20px}
+  #toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#111827;color:#fff;padding:13px 22px;border-radius:12px;font-weight:600;opacity:0;pointer-events:none;transition:.25s;z-index:99;max-width:90vw;text-align:center}
+  #toast.show{opacity:1}
+  .payment-method{display:flex;gap:10px;margin-bottom:14px}
+  .payment-option{flex:1;padding:14px;border:2px solid var(--line);border-radius:12px;cursor:pointer;text-align:center;transition:.15s;background:#fff}
+  .payment-option:hover{border-color:var(--brand)}
+  .payment-option.selected{border-color:var(--brand);background:#eff6ff}
+  .payment-option input{display:none}
+  .payment-icon{font-size:28px;margin-bottom:6px}
+  .payment-label{font-weight:600;font-size:14px}
+  .file-upload{margin-top:14px;padding:16px;border:2px dashed var(--line);border-radius:12px;text-align:center;cursor:pointer;transition:.15s;display:block}
+  .file-upload:hover{border-color:var(--brand);background:#f8fafc}
+  .file-upload input{display:none}
+  .file-preview{margin-top:12px;max-width:100%;border-radius:8px;max-height:200px}
+  .payment-badge{display:inline-block;font-size:11px;font-weight:700;padding:3px 7px;border-radius:6px;margin-left:6px;vertical-align:middle}
+  .payment-cash{background:#dcfce7;color:var(--green)}
+  .payment-online{background:#dbeafe;color:#1d4ed8}
+  .proof-btn{font-size:12px;padding:6px 10px;background:#f1f5f9;border:1px solid var(--line);border-radius:8px;cursor:pointer;margin-left:6px}
+  .proof-btn:hover{background:#e2e8f0}
+  .plans{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px}
+  .plan{border:2px solid var(--line);border-radius:16px;padding:20px;cursor:pointer;transition:.15s;background:#fff;text-align:center}
+  .plan:hover{border-color:var(--brand)}
+  .plan.selected{border-color:var(--brand);background:#eff6ff}
+  .plan .plan-name{font-size:18px;font-weight:800;margin-bottom:6px}
+  .plan .plan-price{font-size:32px;font-weight:800;color:var(--brand);margin:10px 0}
+  .plan .plan-price small{font-size:14px;color:var(--muted);font-weight:600}
+  .plan .plan-desc{font-size:13px;color:var(--muted)}
+  .plan .plan-save{display:inline-block;background:#dcfce7;color:var(--green);font-size:12px;font-weight:700;padding:3px 8px;border-radius:6px;margin-top:8px}
+  .bank-info{background:#f8fafc;border:1px solid var(--line);border-radius:12px;padding:16px;margin:16px 0}
+  .bank-info h3{margin:0 0 10px;font-size:16px}
+  .bank-row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px dashed var(--line);font-size:14px}
+  .bank-row:last-child{border-bottom:0}
+  .bank-row b{color:var(--ink)}
+  .copy-btn{background:var(--brand);color:#fff;border:0;padding:4px 10px;border-radius:6px;font-size:12px;cursor:pointer;margin-left:6px}
+  .sub-banner{padding:14px 18px;border-radius:12px;margin-bottom:18px;font-weight:600;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+  .sub-active{background:#dcfce7;color:var(--green);border:1px solid #bbf7d0}
+  .sub-expiring{background:#fef3c7;color:var(--amber);border:1px solid #fde68a}
+  .sub-expired{background:#fee2e2;color:var(--red);border:1px solid #fecaca}
+  .sub-pending{background:#dbeafe;color:#1d4ed8;border:1px solid #bfdbfe}
+  .admin-tabs{display:flex;gap:8px;margin-bottom:18px;flex-wrap:wrap}
+  .tab{padding:10px 16px;border-radius:10px;cursor:pointer;font-weight:600;background:#fff;border:1px solid var(--line)}
+  .tab.active{background:var(--brand);color:#fff;border-color:var(--brand)}
+  .pending-card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:12px;display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center}
+  .pending-card img{max-width:120px;max-height:120px;border-radius:8px;cursor:pointer;border:1px solid var(--line)}
+  .pending-info small{color:var(--muted);display:block;margin-top:4px}
+  @media(max-width:760px){
+    .stats{grid-template-columns:1fr 1fr}
+    .row{grid-template-columns:1fr 1fr;gap:14px}
+    .actions{grid-column:1/-1;justify-content:flex-start}
+    .row .info{grid-column:1/-1}
+    .brand{font-size:18px}
+    .lang-select{min-width:110px;font-size:14px}
+    .plans{grid-template-columns:1fr}
+    .pending-card{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body>
+
+<!-- Login Screen -->
+<div id="loginScreen" class="screen">
+  <div class="box">
+    <div style="margin-bottom:18px">
+      <select id="loginLang" class="lang-select" onchange="setLanguage(this.value)"></select>
+    </div>
+    <h1 data-i18n="app_title"> Shop Manager</h1>
+    <p data-i18n="sign_in_subtitle">Sign in to manage your business</p>
+    <form id="loginForm">
+      <div class="field">
+        <label data-i18n="email">Email</label>
+        <input type="email" id="loginEmail" required placeholder="your@email.com">
+      </div>
+      <div class="field">
+        <label data-i18n="password">Password</label>
+        <input type="password" id="loginPassword" required placeholder="••••••••">
+      </div>
+      <button type="submit" class="primary" style="width:100%;margin-top:8px" data-i18n="sign_in">Sign in</button>
+      <p style="text-align:center;margin-top:16px;font-size:14px">
+        <span data-i18n="new_business">New business?</span> <a href="#" onclick="showRegister();return false" style="color:var(--brand)" data-i18n="create_account">Register & subscribe</a>
+      </p>
+    </form>
+    <form id="registerForm" style="display:none">
+      <div class="field">
+        <label data-i18n="business_name">Business name</label>
+        <input type="text" id="regBusinessName" required placeholder="e.g. Addis Pharmacy">
+      </div>
+      <div class="field">
+        <label data-i18n="business_type">Business type</label>
+        <select id="regBusinessType" required>
+          <option value="" data-i18n="select_type">Select type...</option>
+          <option value="retail" data-i18n="type_retail">Retail Shop</option>
+          <option value="restaurant" data-i18n="type_restaurant">Restaurant / Cafe</option>
+          <option value="pharmacy" data-i18n="type_pharmacy">Pharmacy</option>
+          <option value="electronics" data-i18n="type_electronics">Electronics</option>
+          <option value="clothing" data-i18n="type_clothing">Clothing / Fashion</option>
+          <option value="grocery" data-i18n="type_grocery">Grocery / Supermarket</option>
+          <option value="wholesale" data-i18n="type_wholesale">Wholesale</option>
+          <option value="service" data-i18n="type_service">Service Business</option>
+          <option value="other" data-i18n="type_other">Other</option>
+        </select>
+      </div>
+      <div class="field">
+        <label data-i18n="your_name">Your name</label>
+        <input type="text" id="regName" required>
+      </div>
+      <div class="field">
+        <label data-i18n="email">Email</label>
+        <input type="email" id="regEmail" required placeholder="your@email.com">
+      </div>
+      <div class="field">
+        <label data-i18n="phone">Phone number</label>
+        <input type="tel" id="regPhone" required placeholder="+251...">
+      </div>
+      <div class="field">
+        <label data-i18n="password_min">Password (min 6 chars)</label>
+        <input type="password" id="regPassword" required minlength="6" placeholder="••••••••">
+      </div>
+      <button type="submit" class="primary" style="width:100%;margin-top:8px" data-i18n="continue_to_plans">Continue → Choose plan</button>
+      <p style="text-align:center;margin-top:16px;font-size:14px">
+        <span data-i18n="already_have">Already have account?</span> <a href="#" onclick="showLogin();return false" style="color:var(--brand)" data-i18n="sign_in">Sign in</a>
+      </p>
+    </form>
+  </div>
+</div>
+
+<!-- Plan Selection Screen -->
+<div id="planScreen" class="screen" style="display:none">
+  <div class="box">
+    <h1 data-i18n="choose_plan">Choose your plan</h1>
+    <p data-i18n="plan_subtitle">Pay through Commercial Bank of Ethiopia to activate</p>
+    <div class="plans">
+      <div class="plan" onclick="selectPlan('monthly')" id="planMonthly">
+        <div class="plan-name" data-i18n="monthly">Monthly</div>
+        <div class="plan-price"><span id="priceMonthly">0</span> <small>ብር</small></div>
+        <div class="plan-desc" data-i18n="per_month">per month</div>
+      </div>
+      <div class="plan selected" onclick="selectPlan('yearly')" id="planYearly">
+        <div class="plan-name" data-i18n="yearly">Yearly</div>
+        <div class="plan-price"><span id="priceYearly">0</span> <small>ብር</small></div>
+        <div class="plan-desc" data-i18n="per_year">per year</div>
+        <div class="plan-save" data-i18n="save_2_months">Save 2 months</div>
+      </div>
+    </div>
+    <div class="bank-info">
+      <h3>🏦 <span data-i18n="pay_to">Pay to this account</span></h3>
+      <div class="bank-row"><span data-i18n="bank_name">Bank</span><b id="bankName">—</b></div>
+      <div class="bank-row"><span data-i18n="account_name">Account name</span><b id="accountName">—</b> <button class="copy-btn" onclick="copyText('accountName')">Copy</button></div>
+      <div class="bank-row"><span data-i18n="account_number">Account number</span><b id="accountNumber">—</b> <button class="copy-btn" onclick="copyText('accountNumber')">Copy</button></div>
+      <div class="bank-row"><span data-i18n="amount_to_pay">Amount</span><b id="amountToPay">—</b> <small>ብር</small></div>
+    </div>
+    <div class="field">
+      <label data-i18n="upload_receipt">Upload transfer receipt screenshot</label>
+      <label class="file-upload" onclick="document.getElementById('subProofFile').click()">
+        <input type="file" id="subProofFile" accept="image/*" onchange="previewSubProof(event)">
+        <div style="font-size:32px;margin-bottom:8px"></div>
+        <div data-i18n="click_to_upload_receipt">Click to upload receipt</div>
+        <div id="subProofPreview"></div>
+      </label>
+    </div>
+    <button class="primary" style="width:100%" onclick="submitSubscription()" data-i18n="submit_for_approval">Submit for approval</button>
+    <p style="text-align:center;margin-top:14px;font-size:13px;color:var(--muted)" data-i18n="approval_note">Your account will be activated after we verify the payment (usually within 24 hours).</p>
+  </div>
+</div>
+
+<!-- Pending Approval Screen -->
+<div id="pendingScreen" class="screen" style="display:none">
+  <div class="box" style="text-align:center">
+    <div style="font-size:64px;margin-bottom:10px">⏳</div>
+    <h1 data-i18n="pending_title">Payment under review</h1>
+    <p data-i18n="pending_msg">We're verifying your payment. You'll get access soon.</p>
+    <div id="pendingDetails" style="text-align:left;background:#f8fafc;padding:16px;border-radius:12px;margin:20px 0;font-size:14px"></div>
+    <button onclick="auth.signOut()" data-i18n="logout">Logout</button>
+  </div>
+</div>
+
+<!-- Expired Screen -->
+<div id="expiredScreen" class="screen" style="display:none">
+  <div class="box" style="text-align:center">
+    <div style="font-size:64px;margin-bottom:10px">️</div>
+    <h1 data-i18n="expired_title">Subscription expired</h1>
+    <p data-i18n="expired_msg">Renew to continue using the app.</p>
+    <button class="primary" onclick="renewSubscription()" data-i18n="renew_now">Renew now</button>
+    <button onclick="auth.signOut()" style="margin-top:10px" data-i18n="logout">Logout</button>
+  </div>
+</div>
+
+<!-- Main App -->
+<div id="mainApp" style="display:none">
+  <header>
+    <div class="brand"><span class="logo">🏪</span> <span id="headerBusinessName">Business</span></div>
+    <div class="user-info">
+      <select id="mainLang" class="lang-select" onchange="setLanguage(this.value)"></select>
+      <span id="userName"></span>
+      <button id="adminBtn" onclick="openAdmin()" style="display:none">⚙️ <span data-i18n="admin">Admin</span></button>
+      <button onclick="logout()" data-i18n="logout">Logout</button>
+    </div>
+  </header>
+  <main>
+    <div id="subBanner"></div>
+    <div class="stats">
+      <div class="stat"><small data-i18n="products">Products</small><b id="sProducts">0</b></div>
+      <div class="stat"><small data-i18n="units_in_stock">Units in stock</small><b id="sUnits">0</b></div>
+      <div class="stat"><small data-i18n="low_stock">Low stock</small><b id="sLow">0</b></div>
+      <div class="stat"><small data-i18n="sold_today">Sold today</small><b id="sToday">0.00 ብር</b></div>
+    </div>
+    <div class="toolbar">
+      <input id="search" data-i18n-placeholder="search_placeholder" placeholder="Search product, SKU or category..." oninput="render()">
+      <button class="primary" onclick="openProduct()">＋ <span data-i18n="add_product">Add product</span></button>
+    </div>
+    <div class="list" id="list"></div>
+    <h3 data-i18n="recent_activity">Recent activity</h3>
+    <div id="activity" data-i18n="no_activity">No activity yet.</div>
+  </main>
+</div>
+
+<!-- Admin Dashboard -->
+<dialog id="adminDialog">
+  <h2>️ <span data-i18n="admin_dashboard">Admin Dashboard</span></h2>
+  <div class="admin-tabs">
+    <div class="tab active" onclick="showAdminTab('pending')" data-i18n="pending_payments">Pending</div>
+    <div class="tab" onclick="showAdminTab('active')" data-i18n="active_subs">Active</div>
+    <div class="tab" onclick="showAdminTab('settings')" data-i18n="settings">Settings</div>
+  </div>
+  <div id="adminPending"></div>
+  <div id="adminActive" style="display:none"></div>
+  <div id="adminSettings" style="display:none">
+    <h3 data-i18n="pricing">Pricing (ር)</h3>
+    <div class="grid2">
+      <div class="field"><label data-i18n="monthly_price">Monthly price</label><input type="number" id="setMonthly" min="0"></div>
+      <div class="field"><label data-i18n="yearly_price">Yearly price</label><input type="number" id="setYearly" min="0"></div>
+    </div>
+    <h3 data-i18n="bank_details">Your CBE bank details</h3>
+    <div class="field"><label data-i18n="bank_name">Bank name</label><input id="setBankName"></div>
+    <div class="field"><label data-i18n="account_name">Account name</label><input id="setAccountName"></div>
+    <div class="field"><label data-i18n="account_number">Account number</label><input id="setAccountNumber"></div>
+    <button class="primary" onclick="saveSettings()" data-i18n="save_settings">Save settings</button>
+  </div>
+  <div class="dialog-actions">
+    <button onclick="document.getElementById('adminDialog').close()" data-i18n="close">Close</button>
+  </div>
+</dialog>
+
+<!-- Product dialogs -->
+<dialog id="productDialog">
+  <h2 id="dialogTitle" data-i18n="add_product">Add product</h2>
+  <form id="productForm">
+    <input type="hidden" id="pId">
+    <div class="field"><label data-i18n="product_name">Product name</label><input id="pName" required maxlength="80"></div>
+    <div class="grid2">
+      <div class="field"><label data-i18n="sku">SKU / Code</label><input id="pSku" maxlength="30"></div>
+      <div class="field"><label data-i18n="category">Category</label><input id="pCategory" maxlength="30"></div>
+    </div>
+    <div class="grid2">
+      <div class="field"><label data-i18n="selling_price">Selling price</label><input id="pPrice" type="number" min="0" step="0.01" required placeholder="0.00"></div>
+      <div class="field"><label data-i18n="quantity">Quantity in stock</label><input id="pQty" type="number" min="0" step="1" required value="0"></div>
+    </div>
+    <div class="field"><label data-i18n="alert_when">Alert me when stock reaches</label><input id="pLow" type="number" min="0" step="1" value="5"></div>
+    <div class="dialog-actions">
+      <button type="button" onclick="document.getElementById('productDialog').close()" data-i18n="cancel">Cancel</button>
+      <button type="submit" class="primary" data-i18n="save_product">Save product</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="restockDialog">
+  <h2 data-i18n="add_stock">Add stock</h2>
+  <form id="restockForm">
+    <input type="hidden" id="rId">
+    <p id="rName" style="color:var(--muted)"></p>
+    <div class="field"><label data-i18n="how_many_arrived">How many units arrived?</label><input id="rQty" type="number" min="1" step="1" required value="1"></div>
+    <div class="dialog-actions">
+      <button type="button" onclick="document.getElementById('restockDialog').close()" data-i18n="cancel">Cancel</button>
+      <button class="primary" type="submit" data-i18n="add_to_stock">Add to stock</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="sellDialog">
+  <h2 data-i18n="sell_product">Sell product</h2>
+  <form id="sellForm">
+    <input type="hidden" id="sellId">
+    <p id="sellInfo" style="color:var(--muted);margin-bottom:18px"></p>
+    <div class="field">
+      <label data-i18n="quantity_to_sell">Quantity to sell</label>
+      <input id="sellQty" type="number" min="1" step="1" required value="1">
+    </div>
+    <div class="field">
+      <label data-i18n="payment_method">Payment method</label>
+      <div class="payment-method">
+        <label class="payment-option selected" onclick="selectPayment('cash')">
+          <input type="radio" name="paymentMethod" value="cash" checked>
+          <div class="payment-icon">💵</div>
+          <div class="payment-label" data-i18n="cash">Cash</div>
+        </label>
+        <label class="payment-option" onclick="selectPayment('online')">
+          <input type="radio" name="paymentMethod" value="online">
+          <div class="payment-icon">📱</div>
+          <div class="payment-label" data-i18n="online_payment">Online Payment</div>
+        </label>
+      </div>
+    </div>
+    <div id="proofSection" style="display:none">
+      <div class="field">
+        <label data-i18n="upload_proof">Upload payment screenshot</label>
+        <label class="file-upload" onclick="document.getElementById('proofFile').click()">
+          <input type="file" id="proofFile" accept="image/*" onchange="previewProof(event)">
+          <div style="font-size:32px;margin-bottom:8px"></div>
+          <div data-i18n="click_to_upload">Click to upload screenshot</div>
+          <div id="proofPreview"></div>
+        </label>
+      </div>
+    </div>
+    <div class="dialog-actions">
+      <button type="button" onclick="document.getElementById('sellDialog').close()" data-i18n="cancel">Cancel</button>
+      <button type="submit" class="primary" data-i18n="confirm_sale">Confirm sale</button>
+    </div>
+  </form>
+</dialog>
+
+<div id="imageViewer" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:#000c;z-index:999;cursor:pointer" onclick="this.style.display='none'">
+  <img id="viewerImage" style="max-width:90%;max-height:90%;margin:auto;display:block;margin-top:5vh" src="">
+</div>
+
+<div id="toast"></div>
+
+<!-- Firebase SDK (NO STORAGE NEEDED) -->
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+
+<script>
+
+// Your web app's Firebase configuration
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+const firebaseConfig = {
+  apiKey: "AIzaSyA2iUpGeoZqAR4svytf0BiG5UVwW1IARGc",
+  authDomain: "shop-manager-eth.firebaseapp.com",
+  projectId: "shop-manager-eth",
+  storageBucket: "shop-manager-eth.firebasestorage.app",
+  messagingSenderId: "103398130378",
+  appId: "1:103398130378:web:5613b4f6c4595a0f0a2a33",
+  measurementId: "G-H2X4TC6Q38"
+};
+/* ===== END CONFIG ===== */
+
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
+
+const CURRENCY = "ብር";
+
+/* ===== TRANSLATIONS ===== */
+const translations = {
+  en: {
+    _name:"English", app_title:"Shop Manager", sign_in:"Sign in", sign_in_subtitle:"Sign in to manage your business",
+    email:"Email", password:"Password", password_min:"Password (min 6 chars)", your_name:"Your name",
+    business_name:"Business name", business_type:"Business type", select_type:"Select type...",
+    type_retail:"Retail Shop", type_restaurant:"Restaurant / Cafe", type_pharmacy:"Pharmacy",
+    type_electronics:"Electronics", type_clothing:"Clothing / Fashion", type_grocery:"Grocery / Supermarket",
+    type_wholesale:"Wholesale", type_service:"Service Business", type_other:"Other",
+    phone:"Phone number", create_account:"Register & subscribe", already_have:"Already have account?",
+    new_business:"New business?", logout:"Logout", products:"Products", units_in_stock:"Units in stock",
+    low_stock:"Low stock", sold_today:"Sold today", search_placeholder:"Search product, SKU or category...",
+    add_product:"Add product", product_name:"Product name", sku:"SKU / Code", category:"Category",
+    selling_price:"Selling price", quantity:"Quantity in stock", alert_when:"Alert me when stock reaches",
+    save_product:"Save product", cancel:"Cancel", add_stock:"Add stock", how_many_arrived:"How many units arrived?",
+    add_to_stock:"Add to stock", edit_product:"Edit product", delete_confirm:"Delete? This cannot be undone.",
+    product_added:"Product added", product_updated:"Product updated", product_deleted:"Product deleted",
+    units_added:"units added", sold:"Sold", out_of_stock:"Out of stock!", login_failed:"Login failed",
+    register_failed:"Registration failed", error:"Error", no_matches:"No matches", shop_ready:"Your business is ready",
+    add_first:"Tap Add product to put your first item on the shelf", no_activity:"No activity yet.",
+    recent_activity:"Recent activity", low_badge:"LOW", left:"left", by:"by",
+    sell_product:"Sell product", quantity_to_sell:"Quantity to sell", payment_method:"Payment method",
+    cash:"Cash", online_payment:"Online Payment", upload_proof:"Upload payment screenshot",
+    click_to_upload:"Click to upload screenshot", confirm_sale:"Confirm sale", sale_completed:"Sale completed",
+    proof_required:"Please upload payment screenshot", view_proof:"View proof", uploading:"Uploading...",
+    upload_failed:"Upload failed", choose_plan:"Choose your plan", plan_subtitle:"Pay through Commercial Bank of Ethiopia to activate",
+    monthly:"Monthly", yearly:"Yearly", per_month:"per month", per_year:"per year", save_2_months:"Save 2 months",
+    pay_to:"Pay to this account", bank_name:"Bank", account_name:"Account name", account_number:"Account number",
+    amount_to_pay:"Amount", upload_receipt:"Upload transfer receipt screenshot", click_to_upload_receipt:"Click to upload receipt",
+    submit_for_approval:"Submit for approval", approval_note:"Your account will be activated after we verify the payment (usually within 24 hours).",
+    pending_title:"Payment under review", pending_msg:"We're verifying your payment. You'll get access soon.",
+    expired_title:"Subscription expired", expired_msg:"Renew to continue using the app.", renew_now:"Renew now",
+    admin:"Admin", admin_dashboard:"Admin Dashboard", pending_payments:"Pending", active_subs:"Active", settings:"Settings",
+    pricing:"Pricing (ብር)", monthly_price:"Monthly price", yearly_price:"Yearly price", bank_details:"Your CBE bank details",
+    save_settings:"Save settings", close:"Close", continue_to_plans:"Continue → Choose plan",
+    sub_active:"Active subscription", sub_expiring:"Expiring soon", sub_expired:"Subscription expired", sub_pending:"Payment pending",
+    days_left:"days left", approve:"Approve", reject:"Reject", no_pending:"No pending payments",
+    no_active:"No active subscriptions", business:"Business", plan:"Plan", approved:"Approved", rejected:"Rejected",
+    settings_saved:"Settings saved", receipt_required:"Please upload receipt", plan_required:"Please select a plan",
+    submitted:"Submitted! We'll verify your payment soon.", renew:"Renew", expires:"Expires",
+    pending_sub:"Your subscription payment is being verified", approved_sub:"Your subscription is active",
+    status:"Status"
+  },
+  am: {
+    _name:"አማርኛ", app_title:"የሱቅ አስተዳዳሪ", sign_in:"ግባ", sign_in_subtitle:"ንግድዎን ለማስተዳደር ይግቡ",
+    email:"ኢሜይል", password:"የይለፍ ቃል", password_min:"የይለፍ ቃል (ያንስ 6 ፊደል)", your_name:"ስምዎ",
+    business_name:"የንግድ ም", business_type:"የንግድ ዓይነት", select_type:"ይነት ይምረ...",
+    type_retail:"የችርቻሮ ሱቅ", type_restaurant:"ሬስቶንት / ካፌ", type_pharmacy:"ፋርማሲ",
+    type_electronics:"ኤሌትሮኒክስ", type_clothing:"ልብስ / ሽን", type_grocery:"ሮሰሪ / ፐርማርኬት",
+    type_wholesale:"ጅምላ", type_service:"የአገልግሎት ንግድ", type_other:"ሌላ",
+    phone:"ስልክ ቁጥር", create_account:"ይመዝገቡ እና ይመዝገቡ", already_have:"መለያ አለዎት?",
+    new_business:"አዲስ ግድ?", logout:"ውጣ", products:"ምርቶች", units_in_stock:"በመጋዘን ውስጥ",
+    low_stock:"ዝቅተኛ ክምችት", sold_today:"ዛሬ የተጠ", search_placeholder:"ምርት ኮድ ወይም ድብ ይፈል...",
+    add_product:"ምርት ይጨምሩ", product_name:"የምርት ስም", sku:"ኮድ", category:"ምድብ",
+    selling_price:"የሽያጭ ዋጋ", quantity:"ብዛት", alert_when:"ማስጠንቂያ በ",
+    save_product:"አስቀምጥ", cancel:"ርዝ", add_stock:"ክምችት ጨምር", how_many_arrived:"ስንት መጣ?",
+    add_to_stock:"ጨምር", edit_product:"አርም", delete_confirm:"ይሰረዝ? ወደ ኋላ አይመለስም።",
+    product_added:"ምርት ተጨምሯል", product_updated:"ተዘምኗል", product_deleted:"ተሰርዧል",
+    units_added:"ተጨምሯል", sold:"ተሸጠ", out_of_stock:"አልቋል!", login_failed:"መግባት አልተሳም",
+    register_failed:"መመዝገብ አልተሳካም", error:"ስህተት", no_matches:"ውጤት የለም", shop_ready:"ንግድዎ ዝግጁ ነው",
+    add_first:"የመጀመሪያውን ምርት ለመጨመር ይጫኑ", no_activity:"እንቅስቃሴ የለም።",
+    recent_activity:"የቅርብ እንቅስሴ", low_badge:"ዝቅተኛ", left:"ቀሪ", by:"በ",
+    sell_product:"ምርት ጥ", quantity_to_sell:"የሸጥ ብዛት", payment_method:"የክፍያ ዘዴ",
+    cash:"ሬ ገንዘብ", online_payment:"ኦንላይን ፍያ", upload_proof:"የክፍያ ስክሪንሾት ይጫኑ",
+    click_to_upload:"ስክሪንት ለመጫን ይጫኑ", confirm_sale:"ሽያጭ አረጋጥ", sale_completed:"ሽያ ተጠናቅቋል",
+    proof_required:"እባዎ ስክሪንት ይጫኑ", view_proof:"ማረጋገጫ ይመልከቱ", uploading:"በመጫን ላይ...",
+    upload_failed:"መጫን አልተሳካም", choose_plan:"እቅድ ይምረጡ", plan_subtitle:"ለማነቃቃት በንግድ ባንክ ኢትዮያ ይክፈሉ",
+    monthly:"ወርሃዊ", yearly:"ዓመታዊ", per_month:"በወር", per_year:"በዓመት", save_2_months:"2 ወር ቆጥብ",
+    pay_to:"ለዚህ መለያ ይክፈሉ", bank_name:"ባንክ", account_name:"የመለያ ስም", account_number:"የመለያ ቁጥር",
+    amount_to_pay:"መክፈያ", upload_receipt:"የዝውውር ማጋገጫ ይጫኑ", click_to_upload_receipt:"ማረጋገጫ ለመጫን ይኑ",
+    submit_for_approval:"ለድቅ አቅር", approval_note:"ክፍያውን ካረጋገጥን በኋላ መለያዎ ይነቃል",
+    pending_title:"ክያ በግምገማ ላይ", pending_msg:"ክያዎን እያረጋገጥን ነው በቅርብ ጊ መዳረሻ ያገኛሉ።",
+    expired_title:"መመዝቢያ ጊዜው አልፏል", expired_msg:"መጠቀም ለመቀጠል ያድሱ", renew_now:"አሁን አስ",
+    admin:"አስተዳዳሪ", admin_dashboard:"የአስተዳዳሪ ዳሽርድ", pending_payments:"በመባበቅ ላይ", active_subs:"ንቁ", settings:"ቅንብሮች",
+    pricing:"ጋ (ብር)", monthly_price:"ወርሃዊ ዋጋ", yearly_price:"ዓመታዊ ጋ", bank_details:"የCBE ንክ መረጃዎ",
+    save_settings:"ቅንብችን አስቀምጥ", close:"ዝጋ", continue_to_plans:"ቀጥል → እቅ ምረጥ",
+    sub_active:"ንቁ መመዝገቢያ", sub_expiring:"በቅርብ ጊዜ የሚያበቃ", sub_expired:"መመዝገቢያ ጊዜው አልፏል", sub_pending:"ክፍያ በመባበቅ ላይ",
+    days_left:"ቀናት ቀ", approve:"ፍቀድ", reject:"ውድቅ", no_pending:"በመጠባበቅ ላይ ክፍያ የለም",
+    no_active:"ንቁ መመዝገቢያ የለም", business:"ንግድ", plan:"እድ", approved:"ፈቅል", rejected:"ውድቅ",
+    settings_saved:"ቅንብሮች ተቀምጠዋል", receipt_required:"እባክዎ ማረጋጫ ይጫኑ", plan_required:"እቅድ ይምጡ",
+    submitted:"ቀርቧል! ክፍያን በቅርብ ጊ እናረጋግጣለን።", renew:"አድስ", expires:"ያበል",
+    pending_sub:"የመመገቢያ ክፍያዎ በማረጋጥ ላይ ነው", approved_sub:"መመዝገቢያዎ ንቁ ነው", status:"ሁኔታ"
+  },
+  ti: {
+    _name:"ትርኛ", app_title:"ኣካያዲ ሱቕ", sign_in:"እቶ", sign_in_subtitle:"ንድኻ ንምስትውል እቶ",
+    email:"መይል", password:"መኽቲ ቃል", password_min:"መኽፈቲ ቃል (ውሑዱ 6)", your_name:"ስምካ",
+    business_name:"ስም ንግዲ", business_type:"ዓይነት ንዲ", select_type:"ዓይነት ምረጽ...",
+    type_retail:"ሱቕ ርቻሮ", type_restaurant:"ስቶራንት / ካ", type_pharmacy:"ፋርማሲ",
+    type_electronics:"ኤለክትሮኒክስ", type_clothing:"ክዳን / ሽን", type_grocery:"ሮሰሪ / ፐርማርኬት",
+    type_wholesale:"ጅምላ", type_service:"ንግዲ ኣገልግሎት", type_other:"ካልእ",
+    phone:"ጽሪ ተሌን", create_account:"ተመዝብ", already_have:"መገብ ኣለካ?",
+    new_business:"ሓድሽ ንግዲ?", logout:"ውእ", products:"ፍርያት", units_in_stock:"ኣብ መኽዘን",
+    low_stock:"ውሑድ ክፍሊ", sold_today:"ሎሚ ዝተጠ", search_placeholder:"ፍርያት፣ ኮድ ይ ምድብ ድለ...",
+    add_product:"ፍርያት ወስኽ", product_name:"ስም ፍርያት", sku:"ድ", category:"ምድብ",
+    selling_price:"ዋጋ ያጥ", quantity:"ብሒ", alert_when:"ምጥንቃቕ ኣብ",
+    save_product:"ዓቅብ", cancel:"ሰርዝ", add_stock:"ክሊ ወስኽ", how_many_arrived:"ክንደይ መጺኡ?",
+    add_to_stock:"ወስኽ", edit_product:"ርም", delete_confirm:"ይደምስ? ንድሕሪት ኣይምለስን።",
+    product_added:"ፍርያት ወሲኹ", product_updated:"ተዘመነ", product_deleted:"ተደምሲሱ",
+    units_added:"ተሲኹ", sold:"ተሸ", out_of_stock:"ወዲ!", login_failed:"ምእታው ኣይከኣለን",
+    register_failed:"ምምዝጋ ኣይከኣለን", error:"ጌጋ", no_matches:"ውጽኢት የለን", shop_ready:"ንግድኻ ድሉው እዩ",
+    add_first:"ቀዳማይ ፍርያት ንምውሳኽ ውቕ", no_activity:"ንፈት የለን",
+    recent_activity:"ናይ ረባ ንጥት", low_badge:"ውሑድ", left:"ዝተረፈ", by:"በ",
+    sell_product:"ፍርያት ሽየጥ", quantity_to_sell:"ዝሽየጥ ዝሒ", payment_method:"ኣባብ ክፍት",
+    cash:"ጥረ ገንዘብ", online_payment:"ኦንላይን ክሊት", upload_proof:"ስክንሾት ክፍት ጸዓን",
+    click_to_upload:"ስክሪንሾት ንምጽዓን ውቕ", confirm_sale:"ሽያጥ ኣረጋጽ", sale_completed:"ሽያ ተዛዚሙ",
+    proof_required:"በጃኻ ክሪንሾት ዓን", view_proof:"መረጋገጺ ርአ", uploading:"ይጽዓን ሎ...",
+    upload_failed:"ምዓን ኣይከኣለን", choose_plan:"መደብ ረጽ", plan_subtitle:"ንምንቃሕ ብ Commercial Bank ክፈል",
+    monthly:"ወርሓዊ", yearly:"ዓመታዊ", per_month:"ብርሒ", per_year:"ብመት", save_2_months:"2 ኣዋርሕ ዓቅብ",
+    pay_to:"ናብ ኣካውንት ክፈል", bank_name:"ባን", account_name:"ስም ኣካውንት", account_number:"ቁጽሪ ኣካውንት",
+    amount_to_pay:"ዝኽፈል", upload_receipt:"ስክሪንት ክፍሊት ዓን", click_to_upload_receipt:"ንምጽዓን ጠው",
+    submit_for_approval:"ንጸደቕ ኣቕርብ", approval_note:"ክፍሊት ስተረጋገጸ ኣካውንት ይንቀሳቐስ።",
+    pending_title:"ክፍሊት ኣብ ግምገማ", pending_msg:"ክፍሊትካ ንርጋገጽ ኣለና።",
+    expired_title:"ምዝገባ ግዜኡ ሓሊ", expired_msg:"ንምቕል ሓድሽ በር።", renew_now:"ሕጂ ሓድሽ በር",
+    admin:"ኣያዲ", admin_dashboard:"ዳሽቦርድ ኣካያዲ", pending_payments:"ይጽበ", active_subs:"ንጡፍ", settings:"ኣቀማምጣ",
+    pricing:"ዋጋ (ብር)", monthly_price:"ዋጋ ወርሓዊ", yearly_price:"ጋ ዓመታዊ", bank_details:"ናይ CBE ባንክ ሓበሬታ",
+    save_settings:"ኣቀማም ዓቅብ", close:"ዕጸው", continue_to_plans:"ቀጽል → መደብ ምረጽ",
+    sub_active:"ንጡፍ ዝገባ", sub_expiring:"ቀሪቡ ውዳእ", sub_expired:"ምዝገባ ግዜኡ ሓሊፉ", sub_pending:"ክፍሊት ጽበ",
+    days_left:"መዓልቲ ተሪ", approve:"ፍቐድ", reject:"ንጸግ", no_pending:"ዝጽበ ክፍሊት የለን",
+    no_active:"ንጡፍ ዝገባ የለን", business:"ንግዲ", plan:"መደብ", approved:"ቒዱ", rejected:"ነጺጉ",
+    settings_saved:"ኣቀማምጣ ተዓቂቡ", receipt_required:"በጃኻ ስሪንሾት ጸዓን", plan_required:"መደብ ረጽ",
+    submitted:"ቀሪቡ! ክሊትካ ንርጋገጽ ኢና።", renew:"ሓድሽ", expires:"ይውዳእ",
+    pending_sub:"ፍሊት ምዝገባ ይረገጽ ኣሎ", approved_sub:"ምዝገባ ንጡፍ እዩ", status:"ኩነታት"
+  },
+  om: {
+    _name:"Afaan Oromoo", app_title:"Bulchaa Suuqaa", sign_in:"Seeni", sign_in_subtitle:"Daldala kee bulchuuf seeni",
+    email:"Imeelii", password:"Jecha iccitii", password_min:"Jecha iccitii (xiqqaatu 6)", your_name:"Maqaa kee",
+    business_name:"Maqaa daldalaa", business_type:"Gosa daldalaa", select_type:"Gosa filadhu...",
+    type_retail:"Suuqna Chirtuu", type_restaurant:"Restaraantii / Kaafee", type_pharmacy:"Farmaasii",
+    type_electronics:"Ileektirooniksii", type_clothing:"Uffata / Faashinii", type_grocery:"Giroosarii / Suuparmaarketii",
+    type_wholesale:"Gurgurtaa Guddaa", type_service:"Daldala Tajaajilaa", type_other:"Kan biraa",
+    phone:"Lakkoofsa bilbilaa", create_account:"Galmaa'i", already_have:"Herrega qabda?",
+    new_business:"Daldalli haaraa?", logout:"Ba'i", products:"Oomisha", units_in_stock:"Kuufama keessatti",
+    low_stock:"Kuufama gadi bu'aa", sold_today:"Har'a gurgurame", search_placeholder:"Oomisha, koodii ykn garee barbaadi...",
+    add_product:"Oomisha dabali", product_name:"Maqaa oomishaa", sku:"Koodii", category:"Garee",
+    selling_price:"Gatii gurgurtaa", quantity:"Baay'ina", alert_when:"Akeekkachiisa yommuu",
+    save_product:"Olkaa'i", cancel:"Haquu", add_stock:"Kuufama dabali", how_many_arrived:"Meeqa dhufe?",
+    add_to_stock:"Dabali", edit_product:"Sirreessi", delete_confirm:"Haqame? Duubatti hin deebi'u.",
+    product_added:"Oomisha dabalame", product_updated:"Haarome", product_deleted:"Haqame",
+    units_added:"dabalame", sold:"Gurgurame", out_of_stock:"Dhumee!", login_failed:"Seenuu hin dandeenye",
+    register_failed:"Galmee hin dandeenye", error:"Dogoggora", no_matches:"Bu'aan hin jiru", shop_ready:"Daldalli kee qophii dha",
+    add_first:"Oomisha jalqabaa dabaluuf tuqi", no_activity:"Sochii hin jiru.",
+    recent_activity:"Sochii dhiyoo", low_badge:"GADII", left:"hafa", by:"kan",
+    sell_product:"Oomisha gurguri", quantity_to_sell:"Baay'ina gurguramu", payment_method:"Mala kaffaltii",
+    cash:"Qarshii", online_payment:"Kaffaltii Toora", upload_proof:"Fakkii kaffaltii fe'i",
+    click_to_upload:"Fakkii fe'uuf tuqi", confirm_sale:"Gurgurtaa mirkaneessi", sale_completed:"Gurgurtaan xumurame",
+    proof_required:"Maaloo fakkii fe'i", view_proof:"Ragaa ilaali", uploading:"Fe'amaa jira...",
+    upload_failed:"Fe'uu hin dandeenye", choose_plan:"Karoora filadhu", plan_subtitle:"CBEn kaffaluuf bana",
+    monthly:"Ji'aa", yearly:"Wagaa", per_month:"ji'aan", per_year:"waggaan", save_2_months:"Ji'a 2 qusadhu",
+    pay_to:"Akkaawuntii kanaaf kaffali", bank_name:"Baankii", account_name:"Maqaa akkaawuntii", account_number:"Lakk. akkaawuntii",
+    amount_to_pay:"Kan kaffalamu", upload_receipt:"Fakkii ragaa fe'i", click_to_upload_receipt:"Ragaa fe'uuf tuqi",
+    submit_for_approval:"Hayyamaaf galchi", approval_note:"Kaffaltii mirkaneessinee booda akkaawuntiin kee bana ta'a.",
+    pending_title:"Kaffaltii ilaalamaa jira", pending_msg:"Kaffaltii kee mirkaneessaa jirra.",
+    expired_title:"Maqaan sun xummurame", expired_msg:"Itti fufuuf haaromsi.", renew_now:"Amma haaromsi",
+    admin:"Bulchaa", admin_dashboard:"Daashboordii Bulchaa", pending_payments:"Eeggataa", active_subs:"Ho'aa", settings:"Qindaa'ina",
+    pricing:"Gatii (ብር)", monthly_price:"Gatii ji'aa", yearly_price:"Gatii wagaa", bank_details:"Odeeffannoo CBE kee",
+    save_settings:"Qindaa'ina olkaa'i", close:"Cufi", continue_to_plans:"Itti fufi → Karoora filadhu",
+    sub_active:"Maqaa ho'aa", sub_expiring:"Dhiyoo xummuramu", sub_expired:"Maqaa xummurame", sub_pending:"Kaffaltii eeggataa",
+    days_left:"guyyaa hafe", approve:"Hayyami", reject:"Didi", no_pending:"Kaffaltii eeggataa hin jiru",
+    no_active:"Maqaa ho'aa hin jiru", business:"Daldala", plan:"Karoora", approved:"Hayyame", rejected:"Didame",
+    settings_saved:"Qindaa'inni olkaa'ame", receipt_required:"Maaloo fakkii fe'i", plan_required:"Karoora filadhu",
+    submitted:"Dhiyaate! Kaffaltii kee dhiyootti mirkaneessina.", renew:"Haaromsi", expires:"Xummura",
+    pending_sub:"Kaffaltii maqaa kee mirkanaa'aa jira", approved_sub:"Maqaan kee ho'aa dha", status:"Haala"
+  }
+};
+
+/* ===== LANGUAGE SYSTEM ===== */
+let currentLang = localStorage.getItem("lang") || "en";
+let currentUser = null;
+let products = [];
+let sales = [];
+let settings = { monthlyPrice: 500, yearlyPrice: 5000, bankName: "Commercial Bank of Ethiopia", accountName: "", accountNumber: "" };
+let currentSubscription = null;
+let isAdmin = false;
+let selectedPlan = "yearly";
+let pendingRegData = null;
+let currentBusiness = null;
+
+function t(key){
+  return (translations[currentLang] && translations[currentLang][key]) || translations.en[key] || key;
+}
+
+function populateLangSelectors(){
+  const opts = Object.keys(translations).map(code =>
+    `<option value="${code}" ${code===currentLang?"selected":""}>${translations[code]._name}</option>`
+  ).join("");
+  document.getElementById("loginLang").innerHTML = opts;
+  if(document.getElementById("mainLang")) document.getElementById("mainLang").innerHTML = opts;
+}
+
+function applyTranslations(){
+  document.querySelectorAll("[data-i18n]").forEach(el=>{
+    el.textContent = t(el.dataset.i18n);
+  });
+  document.querySelectorAll("[data-i18n-placeholder]").forEach(el=>{
+    el.placeholder = t(el.dataset.i18nPlaceholder);
+  });
+  document.documentElement.lang = currentLang;
+}
+
+async function setLanguage(code){
+  currentLang = code;
+  localStorage.setItem("lang", code);
+  populateLangSelectors();
+  applyTranslations();
+  render();
+  if(currentUser){
+    try{ await db.collection("users").doc(currentUser.uid).update({lang:code}); }catch(e){}
+  }
+}
+
+async function loadUserLanguage(){
+  if(!currentUser) return;
+  try{
+    const doc = await db.collection("users").doc(currentUser.uid).get();
+    if(doc.exists && doc.data().lang){
+      currentLang = doc.data().lang;
+      localStorage.setItem("lang", currentLang);
+    }
+  }catch(e){}
+  populateLangSelectors();
+  applyTranslations();
+}
+
+/* ===== AUTH ===== */
+function showLogin(){
+  document.getElementById("loginForm").style.display="block";
+  document.getElementById("registerForm").style.display="none";
+}
+function showRegister(){
+  document.getElementById("loginForm").style.display="none";
+  document.getElementById("registerForm").style.display="block";
+}
+
+document.getElementById("loginForm").addEventListener("submit", async e=>{
+  e.preventDefault();
+  try{
+    await auth.signInWithEmailAndPassword(
+      document.getElementById("loginEmail").value,
+      document.getElementById("loginPassword").value
+    );
+  }catch(err){ alert(t("login_failed")+": "+err.message); }
+});
+
+document.getElementById("registerForm").addEventListener("submit", async e=>{
+  e.preventDefault();
+  pendingRegData = {
+    businessName: document.getElementById("regBusinessName").value.trim(),
+    businessType: document.getElementById("regBusinessType").value,
+    name: document.getElementById("regName").value.trim(),
+    email: document.getElementById("regEmail").value,
+    phone: document.getElementById("regPhone").value,
+    password: document.getElementById("regPassword").value
+  };
+  document.getElementById("loginScreen").style.display = "none";
+  document.getElementById("planScreen").style.display = "grid";
+  await loadSettings();
+  updatePlanPrices();
+});
+
+/* ===== PLAN SELECTION ===== */
+function selectPlan(plan){
+  selectedPlan = plan;
+  document.getElementById("planMonthly").classList.toggle("selected", plan==="monthly");
+  document.getElementById("planYearly").classList.toggle("selected", plan==="yearly");
+  updatePlanPrices();
+}
+
+function updatePlanPrices(){
+  document.getElementById("priceMonthly").textContent = settings.monthlyPrice.toLocaleString();
+  document.getElementById("priceYearly").textContent = settings.yearlyPrice.toLocaleString();
+  document.getElementById("amountToPay").textContent = (selectedPlan==="monthly" ? settings.monthlyPrice : settings.yearlyPrice).toLocaleString();
+  document.getElementById("bankName").textContent = settings.bankName || "—";
+  document.getElementById("accountName").textContent = settings.accountName || "—";
+  document.getElementById("accountNumber").textContent = settings.accountNumber || "—";
+}
+
+function previewSubProof(event){
+  const file = event.target.files[0];
+  if(file){
+    const reader = new FileReader();
+    reader.onload = e => {
+      document.getElementById("subProofPreview").innerHTML = `<img src="${e.target.result}" class="file-preview">`;
+    };
+    reader.readAsDataURL(file);
+  }
+}
+
+function copyText(id){
+  const text = document.getElementById(id).textContent;
+  navigator.clipboard.writeText(text).then(()=>toast("Copied ✅"));
+}
+
+async function submitSubscription(){
+  if(!selectedPlan){ return toast(t("plan_required")); }
+  const file = document.getElementById("subProofFile").files[0];
+  if(!file){ return toast(t("receipt_required")); }
+
+  try{
+    const cred = await auth.createUserWithEmailAndPassword(pendingRegData.email, pendingRegData.password);
+    await cred.user.updateProfile({displayName: pendingRegData.name});
+
+    toast(t("uploading"));
+    
+    // Convert image to base64 and store in Firestore
+    const base64Image = await fileToBase64(file);
+    
+    await db.collection("users").doc(cred.user.uid).set({
+      businessName: pendingRegData.businessName,
+      businessType: pendingRegData.businessType,
+      name: pendingRegData.name,
+      email: pendingRegData.email,
+      phone: pendingRegData.phone,
+      lang: currentLang,
+      createdAt: new Date(),
+      role: "user"
+    });
+
+    await db.collection("subscriptions").add({
+      userId: cred.user.uid,
+      businessName: pendingRegData.businessName,
+      plan: selectedPlan,
+      amount: selectedPlan==="monthly" ? settings.monthlyPrice : settings.yearlyPrice,
+      proofImage: base64Image,
+      status: "pending",
+      createdAt: new Date()
+    });
+
+    document.getElementById("planScreen").style.display = "none";
+    document.getElementById("pendingScreen").style.display = "grid";
+    document.getElementById("pendingDetails").innerHTML = `
+      <b>${t("business")}:</b> ${pendingRegData.businessName}<br>
+      <b>${t("plan")}:</b> ${selectedPlan==="monthly"?t("monthly"):t("yearly")}<br>
+      <b>${t("amount_to_pay")}:</b> ${(selectedPlan==="monthly"?settings.monthlyPrice:settings.yearlyPrice).toLocaleString()} ብር<br>
+      <b>${t("status")}:</b> ${t("sub_pending")}
+    `;
+  }catch(err){
+    alert(t("error")+": "+err.message);
+  }
+}
+
+// Helper: Convert file to base64
+function fileToBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = error => reject(error);
+  });
+}
+
+/* ===== SETTINGS LOADING ===== */
+async function loadSettings(){
+  try{
+    const doc = await db.collection("settings").doc("app").get();
+    if(doc.exists){
+      settings = { ...settings, ...doc.data() };
+    }
+  }catch(e){}
+}
+
+/* ===== SUBSCRIPTION CHECK ===== */
+async function checkSubscription(){
+  if(!currentUser) return;
+  try{
+    const userDoc = await db.collection("users").doc(currentUser.uid).get();
+    if(userDoc.exists){
+      currentBusiness = userDoc.data();
+    }
+
+    const allUsers = await db.collection("users").limit(2).get();
+    if(allUsers.size === 1 && allUsers.docs[0].id === currentUser.uid){
+      isAdmin = true;
+      await db.collection("users").doc(currentUser.uid).update({role:"admin"});
+    } else {
+      isAdmin = userDoc.exists && userDoc.data().role === "admin";
+    }
+
+    if(isAdmin){
+      showMainApp();
+      return;
+    }
+
+    const subSnap = await db.collection("subscriptions")
+      .where("userId","==",currentUser.uid)
+      .where("status","==","active")
+      .orderBy("expiresAt","desc")
+      .limit(1)
+      .get();
+
+    if(!subSnap.empty){
+      currentSubscription = subSnap.docs[0].data();
+      currentSubscription.id = subSnap.docs[0].id;
+      const expiresAt = currentSubscription.expiresAt.toDate();
+      const now = new Date();
+      const daysLeft = Math.ceil((expiresAt - now) / (1000*60*60*24));
+
+      if(daysLeft <= 0){
+        document.getElementById("expiredScreen").style.display = "grid";
+        return;
+      }
+      showMainApp(daysLeft);
+      return;
+    }
+
+    const pendingSnap = await db.collection("subscriptions")
+      .where("userId","==",currentUser.uid)
+      .where("status","in",["pending"])
+      .limit(1)
+      .get();
+
+    if(!pendingSnap.empty){
+      document.getElementById("pendingScreen").style.display = "grid";
+      const d = pendingSnap.docs[0].data();
+      document.getElementById("pendingDetails").innerHTML = `
+        <b>${t("business")}:</b> ${d.businessName}<br>
+        <b>${t("plan")}:</b> ${d.plan==="monthly"?t("monthly"):t("yearly")}<br>
+        <b>${t("amount_to_pay")}:</b> ${d.amount.toLocaleString()} ብር<br>
+        <b>${t("status")}:</b> ${t("sub_pending")}
+      `;
+      return;
+    }
+
+    await loadSettings();
+    updatePlanPrices();
+    document.getElementById("planScreen").style.display = "grid";
+
+  }catch(err){
+    console.error(err);
+    showMainApp();
+  }
+}
+
+function showMainApp(daysLeft){
+  document.getElementById("mainApp").style.display = "block";
+  document.getElementById("userName").textContent = "👤 " + currentUser.displayName;
+  document.getElementById("headerBusinessName").textContent = currentBusiness?.businessName || "Business";
+  if(isAdmin) document.getElementById("adminBtn").style.display = "inline-block";
+
+  if(currentSubscription && !isAdmin){
+    const expiresAt = currentSubscription.expiresAt.toDate();
+    const banner = document.getElementById("subBanner");
+    let cls = "sub-active", msg = t("approved_sub");
+    if(daysLeft <= 7){ cls = "sub-expiring"; msg = t("sub_expiring"); }
+    banner.className = "sub-banner " + cls;
+    banner.innerHTML = `<span>✅ ${msg} — ${t("expires")}: ${expiresAt.toLocaleDateString()} (${daysLeft} ${t("days_left")})</span>
+      <button onclick="renewSubscription()">${t("renew")}</button>`;
+  } else if(isAdmin){
+    document.getElementById("subBanner").innerHTML = `<div class="sub-banner sub-active"> ${t("admin")} — ${t("approved_sub")}</div>`;
+  }
+
+  loadData();
+}
+
+async function renewSubscription(){
+  await loadSettings();
+  updatePlanPrices();
+  document.getElementById("mainApp").style.display = "none";
+  document.getElementById("planScreen").style.display = "grid";
+}
+
+auth.onAuthStateChanged(async user=>{
+  if(user){
+    currentUser = user;
+    ["loginScreen","planScreen","pendingScreen","expiredScreen","mainApp"].forEach(id=>{
+      document.getElementById(id).style.display = "none";
+    });
+    await loadUserLanguage();
+    await checkSubscription();
+  }else{
+    currentUser = null;
+    currentSubscription = null;
+    isAdmin = false;
+    currentBusiness = null;
+    ["planScreen","pendingScreen","expiredScreen","mainApp"].forEach(id=>{
+      document.getElementById(id).style.display = "none";
+    });
+    document.getElementById("loginScreen").style.display = "grid";
+  }
+});
+
+function logout(){ auth.signOut(); }
+
+/* ===== ADMIN DASHBOARD ===== */
+function openAdmin(){
+  document.getElementById("adminDialog").showModal();
+  showAdminTab("pending");
+  loadAdminSettings();
+}
+
+function showAdminTab(tab){
+  document.querySelectorAll(".admin-tabs .tab").forEach(el=>el.classList.remove("active"));
+  event.target.classList.add("active");
+  ["Pending","Active","Settings"].forEach(t=>{
+    document.getElementById("admin"+t).style.display = "none";
+  });
+  document.getElementById("admin"+tab.charAt(0).toUpperCase()+tab.slice(1)).style.display = "block";
+  if(tab==="pending") loadPendingPayments();
+  if(tab==="active") loadActiveSubscriptions();
+}
+
+async function loadPendingPayments(){
+  const container = document.getElementById("adminPending");
+  container.innerHTML = "Loading...";
+  try{
+    const snap = await db.collection("subscriptions").where("status","==","pending").orderBy("createdAt","desc").get();
+    if(snap.empty){
+      container.innerHTML = `<div class="empty"><p>${t("no_pending")}</p></div>`;
+      return;
+    }
+    container.innerHTML = snap.docs.map(doc=>{
+      const d = doc.data();
+      return `<div class="pending-card">
+        <div class="pending-info">
+          <b>${d.businessName}</b>
+          <small>${d.plan==="monthly"?t("monthly"):t("yearly")} · ${d.amount.toLocaleString()} ብር</small>
+          <small>${new Date(d.createdAt.toDate()).toLocaleString()}</small>
+          <small>${d.email||""}</small>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:8px;align-items:flex-end">
+          ${d.proofImage ? `<img src="${d.proofImage}" onclick="viewProof('${d.proofImage}')" style="cursor:pointer">` : ''}
+          <div style="display:flex;gap:6px">
+            <button class="sell" onclick="approvePayment('${doc.id}','${d.userId}','${d.plan}')">✓ ${t("approve")}</button>
+            <button class="danger" onclick="rejectPayment('${doc.id}')">✗ ${t("reject")}</button>
+          </div>
+        </div>
+      </div>`;
+    }).join("");
+  }catch(err){
+    container.innerHTML = "Error: "+err.message;
+  }
+}
+
+async function approvePayment(subId, userId, plan){
+  if(!confirm(t("approve")+"?")) return;
+  try{
+    const days = plan==="monthly" ? 30 : 365;
+    const expiresAt = new Date();
+    expiresAt.setDate(expiresAt.getDate() + days);
+    await db.collection("subscriptions").doc(subId).update({
+      status: "active",
+      approvedAt: new Date(),
+      approvedBy: currentUser.uid,
+      expiresAt: expiresAt
+    });
+    toast(t("approved")+" ✅");
+    loadPendingPayments();
+  }catch(err){ alert(t("error")+": "+err.message); }
+}
+
+async function rejectPayment(subId){
+  if(!confirm(t("reject")+"?")) return;
+  try{
+    await db.collection("subscriptions").doc(subId).update({
+      status: "rejected",
+      rejectedAt: new Date()
+    });
+    toast(t("rejected"));
+    loadPendingPayments();
+  }catch(err){ alert(t("error")+": "+err.message); }
+}
+
+async function loadActiveSubscriptions(){
+  const container = document.getElementById("adminActive");
+  container.innerHTML = "Loading...";
+  try{
+    const snap = await db.collection("subscriptions").where("status","==","active").orderBy("expiresAt","desc").get();
+    if(snap.empty){
+      container.innerHTML = `<div class="empty"><p>${t("no_active")}</p></div>`;
+      return;
+    }
+    container.innerHTML = snap.docs.map(doc=>{
+      const d = doc.data();
+      const exp = d.expiresAt.toDate();
+      const daysLeft = Math.ceil((exp - new Date()) / (1000*60*60*24));
+      return `<div class="pending-card">
+        <div class="pending-info">
+          <b>${d.businessName}</b>
+          <small>${d.plan==="monthly"?t("monthly"):t("yearly")} · ${d.amount.toLocaleString()} ብር</small>
+          <small>${t("expires")}: ${exp.toLocaleDateString()} (${daysLeft} ${t("days_left")})</small>
+        </div>
+        <div>
+          ${daysLeft<=7 ? `<span class="badge" style="background:#fef3c7;color:var(--amber)">${t("sub_expiring")}</span>` : `<span class="badge" style="background:#dcfce7;color:var(--green)">${t("sub_active")}</span>`}
+        </div>
+      </div>`;
+    }).join("");
+  }catch(err){
+    container.innerHTML = "Error: "+err.message;
+  }
+}
+
+async function loadAdminSettings(){
+  await loadSettings();
+  document.getElementById("setMonthly").value = settings.monthlyPrice;
+  document.getElementById("setYearly").value = settings.yearlyPrice;
+  document.getElementById("setBankName").value = settings.bankName;
+  document.getElementById("setAccountName").value = settings.accountName;
+  document.getElementById("setAccountNumber").value = settings.accountNumber;
+}
+
+async function saveSettings(){
+  try{
+    const newSettings = {
+      monthlyPrice: Math.max(0, parseInt(document.getElementById("setMonthly").value)||0),
+      yearlyPrice: Math.max(0, parseInt(document.getElementById("setYearly").value)||0),
+      bankName: document.getElementById("setBankName").value.trim(),
+      accountName: document.getElementById("setAccountName").value.trim(),
+      accountNumber: document.getElementById("setAccountNumber").value.trim(),
+      updatedAt: new Date()
+    };
+    await db.collection("settings").doc("app").set(newSettings, {merge:true});
+    settings = { ...settings, ...newSettings };
+    toast(t("settings_saved")+" ✅");
+  }catch(err){ alert(t("error")+": "+err.message); }
+}
+
+/* ===== DATA ===== */
+function loadData(){
+  db.collection("products").onSnapshot(snapshot=>{
+    products=snapshot.docs.map(doc=>({id:doc.id,...doc.data()}));
+    render();
+  });
+  db.collection("sales").orderBy("at","desc").limit(50).onSnapshot(snapshot=>{
+    sales=snapshot.docs.map(doc=>({id:doc.id,...doc.data()}));
+    render();
+  });
+}
+
+function money(n){ return Number(n).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})+" "+CURRENCY; }
+function esc(s){ return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
+function todayKey(){ return new Date().toLocaleDateString(); }
+
+function toast(msg){
+  const el=document.getElementById("toast"); el.textContent=msg; el.classList.add("show");
+  clearTimeout(el._timer); el._timer=setTimeout(()=>el.classList.remove("show"),2200);
+}
+
+function viewProof(url){
+  document.getElementById("viewerImage").src = url;
+  document.getElementById("imageViewer").style.display = "block";
+}
+
+function render(){
+  const q=document.getElementById("search").value.trim().toLowerCase();
+  const items=products.filter(p=>((p.name||"")+" "+(p.sku||"")+" "+(p.category||"")).toLowerCase().includes(q));
+
+  document.getElementById("sProducts").textContent=products.length;
+  document.getElementById("sUnits").textContent=products.reduce((s,p)=>s+(p.qty||0),0);
+  document.getElementById("sLow").textContent=products.filter(p=>(p.qty||0)<=(p.low||0)).length;
+  document.getElementById("sToday").textContent=money(sales.filter(l=>{
+    const d = l.at && l.at.toDate ? l.at.toDate() : new Date(l.at);
+    return d.toLocaleDateString()===todayKey();
+  }).reduce((s,l)=>s+(l.total||0),0));
+
+  const list=document.getElementById("list");
+  if(!items.length){
+    list.innerHTML=`<div class="empty"><h2>${products.length?t("no_matches")+" 🤔":t("shop_ready")+" 🎉"}</h2>
+      <p>${products.length?"":"👉 ＋ "+t("add_product")+" — "+t("add_first")}</p></div>`;
+  }else{
+    list.innerHTML=items.map(p=>{
+      const low=(p.qty||0)<=(p.low||0), out=(p.qty||0)===0;
+      return `<div class="row">
+        <div class="info">
+          <div class="name">${esc(p.name)}${low?'<span class="badge">'+t("low_badge")+'</span>':""}</div>
+          <div class="meta">${esc(p.sku||"—")}${p.category?" · "+esc(p.category):""}</div>
+        </div>
+        <div class="price">${money(p.price)}</div>
+        <div class="stock ${out?"out":low?"low":""}">${p.qty} <small style="font-weight:500;color:var(--muted)">${t("left")}</small></div>
+        <div class="actions">
+          <button class="sell" onclick="openSell('${p.id}')" ${out?"disabled":""}>🛒 ${t("sold")}</button>
+          <button class="restock" onclick="openRestock('${p.id}')">＋ ${t("add_stock")}</button>
+          <button class="icon-btn" title="${t("edit_product")}" onclick="openProduct('${p.id}')">✏️</button>
+          <button class="icon-btn danger" title="${t("product_deleted")}" onclick="removeProduct('${p.id}')">🗑</button>
+        </div>
+      </div>`;
+    }).join("");
+  }
+
+  document.getElementById("activity").innerHTML = sales.slice(0,5).map(l=>{
+    const d = l.at && l.at.toDate ? l.at.toDate() : new Date(l.at);
+    const paymentBadge = l.paymentMethod === 'online'
+      ? `<span class="payment-badge payment-online">${t("online_payment")}</span>${l.proofImage ? `<button class="proof-btn" onclick="viewProof(\`${l.proofImage}\`)">${t("view_proof")}</button>` : ''}`
+      : `<span class="payment-badge payment-cash">${t("cash")}</span>`;
+    return `🛒 <b>${esc(l.productName)}</b> × ${l.qty} — ${money(l.total)} ${paymentBadge} ${t("by")} ${esc(l.userName)} <span style="opacity:.7">· ${d.toLocaleString()}</span>`;
+  }).join("<br>") || t("no_activity");
+}
+
+function selectPayment(method){
+  document.querySelectorAll('.payment-option').forEach(el => el.classList.remove('selected'));
+  document.querySelector(`input[value="${method}"]`).parentElement.classList.add('selected');
+  document.getElementById('proofSection').style.display = method === 'online' ? 'block' : 'none';
+}
+
+function previewProof(event){
+  const file = event.target.files[0];
+  if(file){
+    const reader = new FileReader();
+    reader.onload = e => {
+      document.getElementById('proofPreview').innerHTML = `<img src="${e.target.result}" class="file-preview">`;
+    };
+    reader.readAsDataURL(file);
+  }
+}
+
+function openSell(id){
+  const p = products.find(x => x.id === id);
+  if(!p || p.qty < 1) return toast(t("out_of_stock"));
+  document.getElementById('sellId').value = id;
+  document.getElementById('sellInfo').textContent = `${p.name} — ${money(p.price)} — ${p.qty} ${t("left")}`;
+  document.getElementById('sellQty').value = 1;
+  document.getElementById('sellQty').max = p.qty;
+  document.getElementById('proofFile').value = '';
+  document.getElementById('proofPreview').innerHTML = '';
+  selectPayment('cash');
+  document.getElementById('sellDialog').showModal();
+}
+
+document.getElementById('sellForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  const id = document.getElementById('sellId').value;
+  const p = products.find(x => x.id === id);
+  const qty = Math.max(1, parseInt(document.getElementById('sellQty').value) || 1);
+  const paymentMethod = document.querySelector('input[name="paymentMethod"]:checked').value;
+  const proofFile = document.getElementById('proofFile').files[0];
+  if(paymentMethod === 'online' && !proofFile) return toast(t("proof_required"));
+  try{
+    let proofImage = null;
+    if(paymentMethod === 'online' && proofFile){
+      toast(t("uploading"));
+      proofImage = await fileToBase64(proofFile);
+    }
+    await db.collection("products").doc(id).update({qty: p.qty - qty});
+    await db.collection("sales").add({
+      productId: id, productName: p.name, qty: qty, total: p.price * qty,
+      paymentMethod: paymentMethod, proofImage: proofImage,
+      userId: currentUser.uid, userName: currentUser.displayName,
+      at: new Date()
+    });
+    document.getElementById('sellDialog').close();
+    toast(t("sale_completed") + " ✅");
+  }catch(err){ alert(t("upload_failed") + ": " + err.message); }
+});
+
+function openProduct(id){
+  const p=products.find(x=>x.id===id);
+  document.getElementById("dialogTitle").textContent=p?t("edit_product"):t("add_product");
+  document.getElementById("pId").value=p?p.id:"";
+  document.getElementById("pName").value=p?p.name:"";
+  document.getElementById("pSku").value=p?(p.sku||""):"";
+  document.getElementById("pCategory").value=p?(p.category||""):"";
+  document.getElementById("pPrice").value=p?p.price:"";
+  document.getElementById("pQty").value=p?p.qty:0;
+  document.getElementById("pLow").value=p?p.low:5;
+  document.getElementById("productDialog").showModal();
+  document.getElementById("pName").focus();
+}
+
+document.getElementById("productForm").addEventListener("submit", async e=>{
+  e.preventDefault();
+  const id=document.getElementById("pId").value;
+  const data={
+    name:document.getElementById("pName").value.trim(),
+    sku:document.getElementById("pSku").value.trim(),
+    category:document.getElementById("pCategory").value.trim(),
+    price:Math.max(0,parseFloat(document.getElementById("pPrice").value)||0),
+    qty:Math.max(0,parseInt(document.getElementById("pQty").value)||0),
+    low:Math.max(0,parseInt(document.getElementById("pLow").value)||0),
+    updatedAt:new Date()
+  };
+  if(!data.name) return;
+  try{
+    if(id){ await db.collection("products").doc(id).update(data); }
+    else{ data.createdAt=new Date(); await db.collection("products").add(data); }
+    document.getElementById("productDialog").close();
+    toast(id?t("product_updated")+" ✅":t("product_added")+" ✅");
+  }catch(err){ alert(t("error")+": "+err.message); }
+});
+
+function openRestock(id){
+  const p=products.find(x=>x.id===id);
+  document.getElementById("rId").value=id;
+  document.getElementById("rName").textContent=p.name+" — "+p.qty+" "+t("left");
+  document.getElementById("rQty").value=1;
+  document.getElementById("restockDialog").showModal();
+}
+
+document.getElementById("restockForm").addEventListener("submit", async e=>{
+  e.preventDefault();
+  const id=document.getElementById("rId").value;
+  const p=products.find(x=>x.id===id);
+  const qty=Math.max(1,parseInt(document.getElementById("rQty").value)||1);
+  try{
+    await db.collection("products").doc(id).update({qty:p.qty+qty});
+    document.getElementById("restockDialog").close();
+    toast(qty+" "+t("units_added")+" 📦");
+  }catch(err){ alert(t("error")+": "+err.message); }
+});
+
+async function removeProduct(id){
+  const p=products.find(x=>x.id===id);
+  if(p && confirm(t("delete_confirm")+" ("+p.name+")")){
+    try{
+      await db.collection("products").doc(id).delete();
+      toast(t("product_deleted"));
+    }catch(err){ alert(t("error")+": "+err.message); }
+  }
+}
+
+/* ===== INIT ===== */
+populateLangSelectors();
+applyTranslations();
+</script>
+</body>
+</html>
